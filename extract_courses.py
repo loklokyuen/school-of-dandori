@@ -16,6 +16,7 @@ courses = parse_all_courses("data")
 
 with open("courses.csv", "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=courses[0].keys())
+    writer.writeheader()
     for course in courses:
         row = {
             k: " | ".join(v) if isinstance(v, list) else v

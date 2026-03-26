@@ -10,24 +10,36 @@ def parse_course_pdf(pdf_path):
     lines = [clean_line(line) for line in text.splitlines() if clean_line(line)]
     course = {}
 
-    course["title"] = lines[0]
-    course["class_id"] = lines[len(lines)-2].split("Class ID:")[-1].strip().split("|")[0].strip()
-    print(course["class_id"])
-
     field_map = {
         "Instructor:": "instructor",
         "Course Type:": "course_type",
         "Location:": "location",
         "Cost:": "cost"
     }
+    course["title"] = lines[0]
+    course["class_id"] = lines[len(lines)-2].split("Class ID:")[-1].strip().split("|")[0].strip()
 
     SECTION_HEADINGS = {"learning objectives", "provided materials", 
                     "skills developed", "course description"}
     
-    for i, line in enumerate(lines):
-        for key, field in field_map.items():
-            if line == key and i + 1 < len(lines):
-                course[field] = lines[i + 1]
+    def extract_field(lines, field_name, already_found):
+        for i, line in enumerate(lines):
+            if line.strip().lower() == field_name.lower() + ":":
+                for j in range(i + 1, min(i + 4, len(lines))):
+                    next_line = lines[j].strip()
+                    if (not next_line.endswith(":")
+                            and next_line.lower() not in SECTION_HEADINGS
+                            and next_line not in already_found):
+                        return next_line
+        return None
+
+    # Pass already found values so they don't get reused
+    already_found = set()
+    for key, field in field_map.items():
+        value = extract_field(lines, key.rstrip(":"), already_found)
+        course[field] = value
+        if value:
+            already_found.add(value)
 
     def extract_section(lines, heading):
         items = []
@@ -78,4 +90,3 @@ def parse_course_pdf(pdf_path):
     
     course["description"] = extract_description(lines)
     return course
-
