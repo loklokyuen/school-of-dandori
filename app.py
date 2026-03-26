@@ -13,14 +13,14 @@ def load_data():
 
 df = load_data()
 
-def get_courses(search_term="", location="", date=""):
+def get_courses(search_term="", location="", course_type=""):
     filtered = df.copy()
 
     if search_term:
         filtered = filtered[
             filtered["title"].str.contains(search_term, case=False, na=False) |
             filtered["description"].str.contains(search_term, case=False, na=False) |
-            filtered["category"].str.contains(search_term, case=False, na=False)
+            filtered["skills"].str.contains(search_term, case=False, na=False)
         ]
 
     if location:
@@ -28,9 +28,9 @@ def get_courses(search_term="", location="", date=""):
             filtered["location"].str.contains(location, case=False, na=False)
         ]
 
-    if date:
+    if course_type:
         filtered = filtered[
-            filtered["date"].str.contains(date, case=False, na=False)
+            filtered["date"].str.contains(course_type, case=False, na=False)
         ]
 
     return filtered
@@ -38,10 +38,10 @@ def get_courses(search_term="", location="", date=""):
 
 st.sidebar.header("Search & Filter")
 search_term = st.sidebar.text_input("Keyword search", placeholder="e.g. pottery, yoga, painting")
-location = st.sidebar.text_input("Location", placeholder="e.g. Leeds, Bristol")
-date = st.sidebar.text_input("Date", placeholder="e.g. Tuesday, March")
+location = st.sidebar.text_input("Location", placeholder="e.g. Leeds, Bristol, Bath")
+course_type = st.sidebar.text_input("Course type", placeholder="e.g. Mindfulness, Fiber Arts")
 
-courses = get_courses(search_term, location, date)
+courses = get_courses(search_term, location, course_type)
 
 st.write(f"**{len(courses)} courses found**")
 if courses.empty:
@@ -49,11 +49,10 @@ if courses.empty:
 
 else:
     for _, row in courses.iterrows():
-        with st.expander(f"{row['title']} — {row['location']} — £{row['price_gbp']}"):
+        with st.expander(f"{row['title']} — {row['location']} — {row['cost']}"):
             st.write(f"**Instructor:** {row['instructor']}")
-            st.write(f"**Date:** {row['date']}")
-            st.write(f"**Time:** {row['time']}")
-            st.write(f"**Category:** {row['category']}")
+            st.write(f"**Course Type:** {row['course_type']}")
+            st.write(f"**Skills:** {row['skills']}")
             st.write(f"**Class ID:** {row['class_id']}")
             if row['description']:
                 st.write(f"**About:** {row['description']}")
