@@ -1,5 +1,5 @@
 from pathlib import Path
-import json
+import csv
 from extract_data import parse_course_pdf
 
 def parse_all_courses(folder_path):
@@ -7,7 +7,6 @@ def parse_all_courses(folder_path):
     pdf_files = Path(folder_path).glob("*.pdf")
     
     for pdf_file in pdf_files:
-        print(f"Processing: {pdf_file.name}")
         course = parse_course_pdf(str(pdf_file))
         results.append(course)
     
@@ -15,5 +14,11 @@ def parse_all_courses(folder_path):
 
 courses = parse_all_courses("data")
 
-with open("courses.json", "w", encoding="utf-8") as f:
-    json.dump(courses, f, indent=2, ensure_ascii=False)
+with open("courses.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=courses[0].keys())
+    for course in courses:
+        row = {
+            k: " | ".join(v) if isinstance(v, list) else v
+            for k, v in course.items()
+        }
+        writer.writerow(row)
