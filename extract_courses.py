@@ -1,6 +1,6 @@
 from pathlib import Path
 import csv
-from extract_data import parse_course_pdf
+from pipeline.extract_data import parse_course_pdf
 
 def parse_all_courses(folder_path):
     results = []
