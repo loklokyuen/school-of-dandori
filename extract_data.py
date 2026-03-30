@@ -41,6 +41,7 @@ def parse_course_pdf(pdf_path):
         if value:
             already_found.add(value)
 
+    course["cost"] = int(course["cost"].split(".")[0][1:])
     def extract_section(lines, heading):
         items = []
         in_section = False
