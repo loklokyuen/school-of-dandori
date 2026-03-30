@@ -30,7 +30,7 @@ def get_courses(search_term="", location="", course_type=""):
 
     if course_type:
         filtered = filtered[
-            filtered["skills"].str.contains(course_type, case=False, na=False)
+            filtered["course_type"].str.contains(course_type, case=False, na=False)
         ]
 
     return filtered
