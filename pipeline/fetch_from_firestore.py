@@ -1,7 +1,12 @@
 from google.cloud import firestore
+from dotenv import load_dotenv
 import pandas as pd
+import os
 
-db = firestore.Client(project="buoyant-world-491810-n6")
+load_dotenv()
+
+def get_db():
+    return firestore.Client(project="buoyant-world-491810-n6")
 
 def read_course_from_firestore(class_id):
     """
@@ -11,6 +16,7 @@ def read_course_from_firestore(class_id):
     Returns:
         A dictionary containing the course data if found, otherwise None.
     """
+    db = get_db()
     doc_ref = db.collection("courses").document(class_id)
     doc = doc_ref.get()
 
@@ -35,6 +41,7 @@ def get_all_courses_from_firestore():
     Returns:
         A list of dictionaries, where each dictionary represents a course.
     """
+    db = get_db()
     courses_ref = db.collection("courses")
     all_courses = []
 
