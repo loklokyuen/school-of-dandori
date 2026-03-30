@@ -37,32 +37,44 @@ def build_system_prompt(df):
 
 def chat(messages, system_prompt):
     response = client.chat.completions.create(
-        model="anthropic/claude-haiku-4-5",
+        model="mistralai/mistral-7b-instruct",
         messages=[{"role": "system", "content": system_prompt}] + messages
     )
     return response.choices[0].message.content
-
-
-# --- Simple test loop ---
-system_prompt = build_system_prompt(df)
-messages = []
-
-print("School of Dandori Course Advisor (type 'quit' to exit)\n")
-
-while True:
-    user_input = input("You: ")
-    
-    if user_input.lower() == "quit":
-        break
-
-    messages.append({"role": "user", "content": user_input})
-    response = chat(messages, system_prompt)
-    messages.append({"role": "assistant", "content": response})
-    
-    print(f"\nAdvisor: {response}\n")
 
 #------------ streamlit page -----------------------
 
 st.set_page_config(page_title="Course Advisor", page_icon="🌘")
 st.title("🌘 Course Advisor")
 st.write("Tell me what you're looking for and I'll help you find the perfect course")
+
+# --- Initialise session state ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# --- Clear conversation button ---
+if st.button("Start new conversation"):
+    st.session_state.messages = []
+
+# --- Display conversation history ---
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
+
+# --- Handle new input ---
+if user_input := st.chat_input("What kind of course are you looking for?"):
+
+    # Add and display user message
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.write(user_input)
+
+    # Get and display assistant response
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            system_prompt = build_system_prompt(df)
+            response = chat(st.session_state.messages, system_prompt)
+            st.write(response)
+
+    # Add assistant response to history
+    st.session_state.messages.append({"role": "assistant", "content": response})
