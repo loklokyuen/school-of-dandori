@@ -45,7 +45,7 @@ def chat(messages, relevant_courses):
         "content": f"Relevant courses:\n\n{relevant_courses}\n\nStudent message: {messages[-1]['content']}"
     }]
 
-    response = openrouter.chat.completions.create(
+    response = client.chat.completions.create(
         model="mistralai/mistral-small-2603",
         messages=[{"role": "system", "content": system}] + augmented_messages
     )
