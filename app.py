@@ -13,6 +13,9 @@ def load_data():
 
 df = load_data()
 
+# get list of all locations
+all_locations = df['location'].dropna().unique()
+
 def get_courses(search_term="", location="", course_type=""):
     filtered = df.copy()
 
@@ -23,7 +26,7 @@ def get_courses(search_term="", location="", course_type=""):
             filtered["skills"].str.contains(search_term, case=False, na=False)
         ]
 
-    if location:
+    if location and location != "All locations":
         filtered = filtered[
             filtered["location"].str.contains(location, case=False, na=False)
         ]
@@ -38,7 +41,7 @@ def get_courses(search_term="", location="", course_type=""):
 
 st.sidebar.header("Search & Filter")
 search_term = st.sidebar.text_input("Keyword search", placeholder="e.g. pottery, yoga, painting")
-location = st.sidebar.text_input("Location", placeholder="e.g. Leeds, Bristol, Bath")
+location = st.sidebar.selectbox("Location", ["All locations"] + sorted(all_locations.tolist()), placeholder="e.g. Oxford")
 course_type = st.sidebar.text_input("Course type", placeholder="e.g. Mindfulness, Fiber Arts")
 
 courses = get_courses(search_term, location, course_type)
