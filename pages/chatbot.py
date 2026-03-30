@@ -1,10 +1,19 @@
 import streamlit as st
 import pandas as pd
+import chromadb
+from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# --- Clients ---
+chroma_client = chromadb.PersistentClient(path="./chroma_store")
+collection = chroma_client.get_or_create_collection(
+    name="courses",
+    embedding_function=DefaultEmbeddingFunction()
+)
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -13,32 +22,31 @@ client = OpenAI(
 # load the csv into a dataframe
 df = pd.read_csv("courses.csv")
 
-# build a prompt for the LLM
-def build_system_prompt(df):
-    course_list = ""
-    for _, row in df.iterrows():
-        course_list += f"- ID: {row['class_id']} | {row['title']} | {row['location']} | {row['cost']} | Type: {row['course_type']} | Skills: {row['skills']}\n"
+# --- RAG function ---
+def get_relevant_courses(question, n_results=5):
+    results = collection.query(query_texts=[question], n_results=n_results)
+    return "\n\n---\n\n".join(results["documents"][0])
 
-    return f"""
-    You are a friendly and whimsical course advisor for the School of Dandori, 
-    an adult education platform offering playful and creative evening and weekend classes.
+# --- Chat function ---
+def chat(messages, relevant_courses):
+    system = """You are a friendly and whimsical course advisor for the School of Dandori,
+                an adult education platform offering playful and creative evening and weekend classes.
+                Your job is to help users find the right course through friendly conversation.
+                Ask follow up questions to understand what they're looking for — such as location,
+                budget, interests, or what kind of experience they want.
+                Use only the course information provided to make recommendations.
+                If no courses match, say so honestly. Always mention the Class ID when recommending a course.
+                Never make up courses that aren't in the provided list."""
 
-    Your job is to help users find the right course through friendly conversation. 
-    Ask follow up questions to understand what they're looking for — such as location, 
-    budget, interests, or what kind of experience they want.
+    # inject the relevant courses into the last user message
+    augmented_messages = messages[:-1] + [{
+        "role": "user",
+        "content": f"Relevant courses:\n\n{relevant_courses}\n\nStudent message: {messages[-1]['content']}"
+    }]
 
-    When you have enough information, recommend 1-3 courses from the list below.
-    Always mention the Class ID so users can book.
-    Never make up courses that aren't in the list.
-
-    Available courses:
-    {course_list}
-    """
-
-def chat(messages, system_prompt):
-    response = client.chat.completions.create(
+    response = openrouter.chat.completions.create(
         model="mistralai/mistral-small-2603",
-        messages=[{"role": "system", "content": system_prompt}] + messages
+        messages=[{"role": "system", "content": system}] + augmented_messages
     )
     return response.choices[0].message.content
 
@@ -69,11 +77,13 @@ if user_input := st.chat_input("What kind of course are you looking for?"):
     with st.chat_message("user"):
         st.write(user_input)
 
+    # Get relevant courses from ChromaDB
+    relevant_courses = get_relevant_courses(user_input)
+
     # Get and display assistant response
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            system_prompt = build_system_prompt(df)
-            response = chat(st.session_state.messages, system_prompt)
+            response = chat(st.session_state.messages, relevant_courses)
             st.write(response)
 
     # Add assistant response to history
