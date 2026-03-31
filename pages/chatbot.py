@@ -209,6 +209,7 @@ if user_input := st.chat_input("Type here..."):
 
     # 2. ARE WE STILL IN DISCOVERY?
     if not st.session_state.discovery_complete:
+        feedback = ""
         # Store the answer to the PREVIOUS question
         current_q_idx = st.session_state.question_idx
         if current_q_idx == 0: 
