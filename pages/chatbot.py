@@ -72,12 +72,6 @@ for message in st.session_state.messages:
 # --- Handle new input ---
 if user_input := st.chat_input("What kind of course are you looking for?"):
 
-    relevant_courses = get_relevant_courses(user_input)
-    
-    # debug here - before anything else
-    st.write("DEBUG - relevant courses:")
-    st.write(relevant_courses)
-
     # Add and display user message
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
