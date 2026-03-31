@@ -140,6 +140,11 @@ def get_relevant_courses(question, n_results=15):
             n_results=n_results,
             where=where
         )
+        if not results["documents"][0]:
+            results = collection.query(
+                query_texts=[question],
+                n_results=n_results
+            )
     else:
         results = collection.query(
             query_texts=[question],
