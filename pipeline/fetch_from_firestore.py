@@ -1,10 +1,15 @@
 from google.cloud import firestore
+from dotenv import load_dotenv
 import streamlit as st
 import pandas as pd
+import os
 
-db = firestore.Client(project="buoyant-world-491810-n6")
+load_dotenv()
 
-@st.cache_data(ttl=300) 
+def get_db():
+    return firestore.Client(project="buoyant-world-491810-n6")
+
+#@st.cache_data(ttl=300) 
 def read_course_from_firestore(class_id, title):
     """
     Reads a single course document from the 'courses' collection in Firestore.
@@ -13,6 +18,7 @@ def read_course_from_firestore(class_id, title):
     Returns:
         A dictionary containing the course data if found, otherwise None.
     """
+    db = get_db()
     doc_ref = db.collection("courses").document(class_id + " " + title)
     doc = doc_ref.get()
 
@@ -24,6 +30,7 @@ def read_course_from_firestore(class_id, title):
         return None
 
 def get_nb_courses():
+    db = get_db()
     firestore_doc_count = 0
     collection_ref = db.collection('courses')
 
@@ -31,13 +38,14 @@ def get_nb_courses():
         firestore_doc_count += 1
     print(f"Number of documents in Firestore 'courses' collection: {firestore_doc_count}")
 
-@st.cache_data(ttl=300) 
+#@st.cache_data(ttl=300) 
 def get_all_courses_from_firestore():
     """
     Retrieves all course documents from the 'courses' collection in Firestore.
     Returns:
         A list of dictionaries, where each dictionary represents a course.
     """
+    db = get_db()
     courses_ref = db.collection("courses")
     all_courses = []
 
