@@ -3,6 +3,9 @@ from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import pandas as pd
+
+df = pd.read_csv("courses.csv")
 
 load_dotenv()
 
@@ -17,10 +20,28 @@ openrouter = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY")
 )
 
-def ask(question: str, n_results: int = 5) -> str:
+def ask(question: str, n_results: int = 10) -> str:
     # 1. Retrieve relevant courses
-    results = collection.query(query_texts=[question], n_results=n_results)
-    context = "\n\n---\n\n".join(results["documents"][0])
+    results = collection.query(query_texts=[question], n_results=10)
+    
+    # Check if a location is mentioned and pre-filter
+    location_filter = None
+    for location in df["location"].unique():
+        if location.lower() in question.lower():
+            location_filter = location
+            break
+    
+    if location_filter:
+        # Use CSV filter instead of ChromaDB for location queries
+        filtered = df[df["location"].str.lower() == location_filter.lower()]
+        context = "\n\n---\n\n".join([
+            f"Title: {row['title']}\nInstructor: {row['instructor']}\nCourse Type: {row['course_type']}\nLocation: {row['location']}\nCost: £{row['cost']}\nSkills: {row['skills']}\nDescription: {row['description']}\nClass ID: {row['class_id']}"
+            for _, row in filtered.iterrows()
+        ])
+    else:
+        # Fall back to ChromaDB for semantic queries
+        results = collection.query(query_texts=[question], n_results=n_results)
+        context = "\n\n---\n\n".join(results["documents"][0])
 
     # 2. Build prompt
     system = """You are a friendly course advisor for School of Dandori.
