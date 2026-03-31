@@ -120,7 +120,7 @@ def extract_filters(user_message):
 # --- RAG function ---
 def get_relevant_courses(question, n_results=15):
     filters = extract_filters(question)
-
+    print(filters)
     # build chromadb where clause from extracted filters
     where_conditions = []
 
@@ -238,8 +238,7 @@ if user_input := st.chat_input("Type here..."):
                 "role": "assistant", 
                 "content": "Perfect! Searching for the best courses now..."
             })
-            # Trigger the first RAG response immediately
-            relevant_courses = get_relevant_courses(user_input)
+            relevant_courses = get_relevant_courses("Location: " + str(st.session_state.discovery_answers['location']).title() + user_input)
             response = chat(st.session_state.messages, relevant_courses)
             st.session_state.messages.append({"role": "assistant", "content": response})
     
