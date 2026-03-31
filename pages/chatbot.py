@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- Clients ---
-chroma_client = chromadb.PersistentClient(path="./chroma_store")
+chroma_client = chromadb.PersistentClient(path="./pipeline/chroma_store")
 collection = chroma_client.get_or_create_collection(
     name="courses",
     embedding_function=DefaultEmbeddingFunction()
@@ -23,7 +23,7 @@ client = OpenAI(
 df = pd.read_csv("courses.csv")
 
 # --- RAG function ---
-def get_relevant_courses(question, n_results=5):
+def get_relevant_courses(question, n_results=15):
     results = collection.query(query_texts=[question], n_results=n_results)
     return "\n\n---\n\n".join(results["documents"][0])
 
@@ -71,6 +71,12 @@ for message in st.session_state.messages:
 
 # --- Handle new input ---
 if user_input := st.chat_input("What kind of course are you looking for?"):
+
+    relevant_courses = get_relevant_courses(user_input)
+    
+    # debug here - before anything else
+    st.write("DEBUG - relevant courses:")
+    st.write(relevant_courses)
 
     # Add and display user message
     st.session_state.messages.append({"role": "user", "content": user_input})
