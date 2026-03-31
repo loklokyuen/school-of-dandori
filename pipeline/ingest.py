@@ -63,3 +63,6 @@ def ingest_data():
         ids=ids
     )
     print(f"Ingested {len(chunks)} courses into ChromaDB")
+
+if __name__ == "__main__":
+    ingest_data()
