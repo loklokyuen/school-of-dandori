@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- Clients ---
-chroma_client = chromadb.PersistentClient(path="./pipeline/chroma_store")
+chroma_client = chromadb.PersistentClient(path="./chroma_store")
 collection = chroma_client.get_or_create_collection(
     name="courses",
     embedding_function=DefaultEmbeddingFunction()
