@@ -62,21 +62,20 @@ def validate_location(user_input):
     # 1. Direct Match (Exact city/location name)
     # Check if any available location (lowercase) matches user input
     unique_locations = df['location'].str.lower().unique().tolist()
-    direct_matches = [loc for loc in unique_locations if loc.lower() == user_input_clean]
-    if direct_matches:
-        return True, direct_matches, f"Perfect! We have several courses in {direct_matches[0].title()}."
+    matched_cities = [loc for loc in unique_locations if loc in user_input_clean]
+    if matched_cities:
+        official_name = matched_cities[0].title() 
+        return True, [official_name], f"Perfect! We have several courses in {official_name.title()}."
 
     # 2. Region Match
-    if user_input_clean in REGION_MAP:
-        region_cities = REGION_MAP[user_input_clean]
-        # Find which cities in that region actually have courses
-        matches = [loc for loc in unique_locations if loc in region_cities]
-        
-        if matches:
-            return True, matches, f"Great! In the {user_input.title()}, we have courses available in: {', '.join(matches).title()}."
-        else:
-            return False, [], f"We do have courses in the {user_input.title()}, but unfortunately not in any locations currently listed."
-
+    for region, cities in REGION_MAP.items():
+        if region in user_input_clean:
+            # Filter unique_locations to find which ones belong to this region
+            matches = [loc.title() for loc in unique_locations if loc in cities]
+            if matches:
+                return True, matches, f"Great! In the {region.title()}, we have courses in: {', '.join(matches)}."
+            else:
+                return False, [], f"We know the {region.title()}, but we don't have any classes listed there right now."
     # 3. Outside UK / Invalid
     return False, [], "I'm sorry, we currently only offer courses within specific UK regions. We don't have anything available in that area right now."
 
@@ -248,5 +247,7 @@ if user_input := st.chat_input("Type here..."):
         relevant_courses = get_relevant_courses(user_input)
         response = chat(st.session_state.messages, relevant_courses)
         st.session_state.messages.append({"role": "assistant", "content": response})
+        with st.chat_message("assistant"):
+            display_response_with_cards(response)
 
     st.rerun()
