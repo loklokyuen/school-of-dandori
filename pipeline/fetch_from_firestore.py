@@ -3,10 +3,21 @@ from dotenv import load_dotenv
 import streamlit as st
 import pandas as pd
 import os
+import json
+import tempfile
 
 load_dotenv()
 
 def get_db():
+    if "GOOGLE_CREDENTIALS" in st.secrets:
+        # Running on Streamlit Cloud — load from secrets
+        credentials_dict = dict(st.secrets["GOOGLE_CREDENTIALS"])
+        credentials_dict["private_key"] = credentials_dict["private_key"].replace("\\n", "\n")
+        
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(credentials_dict, f)
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = f.name
+    
     return firestore.Client(project="buoyant-world-491810-n6")
 
 #@st.cache_data(ttl=300) 
