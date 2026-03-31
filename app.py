@@ -67,7 +67,7 @@ if courses.empty:
 
 else:
     for _, row in courses.iterrows():
-        with st.expander(f"{row['title']} — {row['location']} — {row['cost']}"):
+        with st.expander(f"{row['title']} — {row['location']} — £{row['cost']}"):
             st.write(f"**Instructor:** {row['instructor']}")
             st.write(f"**Course Type:** {row['course_type']}")
             st.write(f"**Skills:** {row['skills']}")
