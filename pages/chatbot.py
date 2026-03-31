@@ -50,7 +50,13 @@ def extract_filters(user_message):
     )
 
     try:
-        return json.loads(response.choices[0].message.content.strip())
+        raw = response.choices[0].message.content.strip()
+        # strip markdown code fences if the model wraps the response
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        return json.loads(raw.strip())
     except:
         return {"location": None, "max_cost": None, "course_type": None, "skills": None}
 
