@@ -1,5 +1,8 @@
 import streamlit as st
 
+from components.sidebar import render_sidebar
+
+render_sidebar()
 st.set_page_config(page_title="Your Bag", page_icon="🛒")
 st.title("🛒 Your Shopping Bag")
 
@@ -16,7 +19,6 @@ else:
                 st.subheader(item['title'])
                 st.caption(f"Class ID: {item['id']}")
                 st.write(f"**Location**: {item['location']} | **Instructor**: {item['instructor']}")
-                
 
             with col2:
                 st.write(f"£{item['cost']} ")
@@ -24,8 +26,15 @@ else:
                 if st.button("Remove", key=f"remove_{idx}"):
                     st.session_state.shopping_bag.pop(idx)
                     st.rerun()
-            with st.expander("See description"):
+            skills = item['skills'].strip("[]").replace("'", "").split(", ")
+            st.pills("Skills", skills)
+            with st.expander("Description"):
                 st.write(item['description'])
+            with st.expander("More"):
+                provided_materials = item['provided_materials'].strip("[]").replace("'", "").split(", ")
+                st.pills("Provided Materials", provided_materials)
+                learning_objectives = item['learning_objectives'].strip("[]").replace("'", "").split(", ")
+                st.pills("Learning Objectives", learning_objectives)
         sum += float(item['cost'])
 
     st.divider()

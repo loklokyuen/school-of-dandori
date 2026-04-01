@@ -7,8 +7,11 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from pipeline.ingest import sync_all
+from components.sidebar import render_sidebar
+
 import re
 load_dotenv()
+render_sidebar()
 
 # Initialize bag in session state
 if "shopping_bag" not in st.session_state:
@@ -16,15 +19,8 @@ if "shopping_bag" not in st.session_state:
 
 def add_to_bag(course_data):
     # Check if already added
-    if course_data["class_id"] not in [item['id'] for item in st.session_state.shopping_bag]:
-        st.session_state.shopping_bag.append({
-            "id": course_data["class_id"], 
-            "title": course_data["title"], 
-            "location": course_data["location"],
-            "instructor": course_data["instructor"],
-            "description" : course_data["description"],
-            "cost" : course_data["cost"]
-            })
+    if course_data["class_id"] not in [item['class_id'] for item in st.session_state.shopping_bag]:
+        st.session_state.shopping_bag.append(dict(course_data))
         st.toast(f"✅ Added {course_data["title"]} to your bag!")
     else:
         st.toast("💡 That course is already in your bag.")
@@ -44,12 +40,12 @@ if "discovery_answers" not in st.session_state:
 if "discovery_complete" not in st.session_state:
     st.session_state.discovery_complete = False
 
-with st.sidebar:
-    if st.button("🔄 Sync with Firestore"):
-        with st.spinner("Syncing latest courses..."):
-            sync_all()
-            st.session_state.df = pd.read_csv("./data/courses.csv")
-            st.success(f"Database Synced")
+# with st.sidebar:
+#     if st.button("🔄 Sync with Firestore"):
+#         with st.spinner("Syncing latest courses..."):
+#             sync_all()
+#             st.session_state.df = pd.read_csv("./data/courses.csv")
+#             st.success(f"Database Synced")
 
 # --- Clients ---
 chroma_client = chromadb.PersistentClient(path="./chroma_store")

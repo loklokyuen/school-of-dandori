@@ -1,17 +1,37 @@
 import os
 import pandas as pd
 import streamlit as st
+from components.sidebar import render_sidebar
+
+render_sidebar()
 
 st.set_page_config(page_title="School of Dandori", page_icon="🌘")
 st.title("🌘 School of Dandori — Course Finder")
 st.write("Find your next whimsical adventure")
 
-def load_data():
-    if not os.path.exists("courses.csv"):
-        return pd.DataFrame()
-    return pd.read_csv("courses.csv")
+# def load_data():
+#     if not os.path.exists("courses.csv"):
+#         return pd.DataFrame()
+#     return pd.read_csv("courses.csv")
 
-df = load_data()
+# df = load_data()
+
+if "df" not in st.session_state:
+    st.session_state.df = pd.read_csv("./data/courses.csv")
+
+df = st.session_state.df 
+
+if "shopping_bag" not in st.session_state:
+    st.session_state.shopping_bag = []
+
+def add_to_bag(course_data):
+    # Check if already added
+    if course_data["class_id"] not in [item['id'] for item in st.session_state.shopping_bag]:
+        st.session_state.shopping_bag.append(dict(course_data))
+        st.toast(f"✅ Added {course_data["title"]} to your bag!")
+    else:
+        st.toast("💡 That course is already in your bag.")
+
 
 # get list of all locations
 all_locations = df['location'].dropna().unique()
@@ -70,7 +90,12 @@ else:
         with st.expander(f"{row['title']} — {row['location']} — £{row['cost']}"):
             st.write(f"**Instructor:** {row['instructor']}")
             st.write(f"**Course Type:** {row['course_type']}")
-            st.write(f"**Skills:** {row['skills']}")
+            skills = row['skills'].strip("[]").replace("'", "").split(", ")
+            st.pills("Skills", skills)
+            # st.write(f"**Skills:** {skills}")
             st.write(f"**Class ID:** {row['class_id']}")
             if row['description']:
                 st.write(f"**About:** {row['description']}")
+            if st.button("🛒 Add", key=f"btn_{row['class_id']}_{row['title']}"):
+                add_to_bag(row)
+            
