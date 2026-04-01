@@ -91,7 +91,7 @@ else:
             st.write(f"**Instructor:** {row['instructor']}")
             st.write(f"**Course Type:** {row['course_type']}")
             skills = row['skills'].strip("[]").replace("'", "").split(", ")
-            st.pills("Skills", skills)
+            st.pills("Skills", skills, key=f"skills_{row['class_id']}_{row['title']}")
             # st.write(f"**Skills:** {skills}")
             st.write(f"**Class ID:** {row['class_id']}")
             if row['description']:

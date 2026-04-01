@@ -27,7 +27,7 @@ else:
                     st.session_state.shopping_bag.pop(idx)
                     st.rerun()
             skills = item['skills'].strip("[]").replace("'", "").split(", ")
-            st.pills("Skills", skills)
+            st.pills("Skills", skills, key=f"skills_{item['class_id']}_{item['title']}")
             with st.expander("Description"):
                 st.write(item['description'])
             with st.expander("More"):
