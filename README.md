@@ -2,6 +2,9 @@
 
 School of Dandori is an AI-powered course discovery tool that turns static PDF course listings into structured, searchable course recommendations. It combines PDF ingestion, Firestore storage, admin tooling, and a RAG-based chatbot to help users find relevant courses through natural-language queries.
 
+[Live demo](https://school-of-dandori.streamlit.app)
+
+
 ## Overview
 
 The client had over 200 course listings stored as static PDFs, making course discovery difficult for users and time-consuming for staff. Customers often had to contact staff directly to find suitable courses.
